@@ -43,10 +43,13 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
 
   // Track current conversation ID to avoid duplicates
   int? _currentConversationId;
-  
+
   // Animation-related properties
   List<bool> _visibleMessages = [];
   bool _animatingHistory = false;
+  
+  // Sidebar animation
+  List<bool> _visibleSidebarItems = [];
 
   @override
   void initState() {
@@ -58,9 +61,23 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
   Future<void> _loadStoredConversations() async {
     final chats = await ChatDatabase().getConversations();
     if (!mounted) return;
+    
     setState(() {
       _storedConversations = List<Map<String, dynamic>>.from(chats);
+      _visibleSidebarItems = List.generate(chats.length, (_) => false);
     });
+    
+    // Animate each sidebar item appearing with staggered delay
+    for (int i = 0; i < chats.length; i++) {
+      Future.delayed(Duration(milliseconds: i * 80), () {
+        if (!mounted) return;
+        setState(() {
+          if (i < _visibleSidebarItems.length) {
+            _visibleSidebarItems[i] = true;
+          }
+        });
+      });
+    }
   }
 
   String get _defaultBaseUrl {
@@ -202,11 +219,11 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
     final messages = (convo['messages'] as List)
         .map((m) => _Message(role: m['role'], content: m['content']))
         .toList();
-    
+
     setState(() {
       _currentConversationId = convo['id'] as int?;
       _animatingHistory = true;
-      
+
       // Reset the message list with just the system prompt
       _history
         ..clear()
@@ -218,14 +235,14 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
 ''',
           ),
         );
-      
+
       // Add all messages to history but keep them invisible
       _history.addAll(messages);
-      
+
       // Initialize all messages as invisible
       _visibleMessages = List.generate(messages.length, (_) => false);
     });
-    
+
     // Animate each message appearing one by one with a staggered effect
     for (int i = 0; i < messages.length; i++) {
       // Calculate a staggered delay - messages appear faster as they load
@@ -237,7 +254,7 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
           if (i < _visibleMessages.length) {
             _visibleMessages[i] = true;
           }
-          
+
           // Mark animation as complete when all messages are shown
           if (i == messages.length - 1) {
             Future.delayed(const Duration(milliseconds: 300), () {
@@ -248,7 +265,7 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
             });
           }
         });
-        
+
         // Scroll to show the latest message
         _scrollToBottom();
       });
@@ -377,8 +394,13 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
                     final displayName = convo['name'] as String? ?? firstMsg;
 
                     final isEditing = _editingConversationId == conversationId;
+                    
+                    // Check if this item should be visible
+                    final isVisible = index < _visibleSidebarItems.length 
+                        ? _visibleSidebarItems[index] 
+                        : true;
 
-                    return ListTile(
+                    Widget listTileWidget = ListTile(
                       title: isEditing
                           ? TextField(
                               controller: _editController,
@@ -447,6 +469,14 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
                               _loadConversationFromDB(convo);
                             },
                     );
+                    
+                    // Apply fade-in animation to sidebar items
+                    return AnimatedOpacity(
+                      opacity: isVisible ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      child: listTileWidget,
+                    );
                   },
                 ),
               ),
@@ -465,20 +495,23 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
               itemBuilder: (context, index) {
                 final m = _history[index];
                 if (m.role == 'system') return const SizedBox.shrink();
-                
+
                 final isUser = m.role == 'user';
                 final adjustedIndex = index - 1; // Adjust for system message
-                
+
                 // Determine if this message should be animated
-                final shouldAnimate = _animatingHistory && 
-                                      adjustedIndex >= 0 && 
-                                      adjustedIndex < _visibleMessages.length;
-                
+                final shouldAnimate =
+                    _animatingHistory &&
+                    adjustedIndex >= 0 &&
+                    adjustedIndex < _visibleMessages.length;
+
                 // Get message visibility for animation
-                final isVisible = !shouldAnimate || 
-                                 (shouldAnimate && adjustedIndex < _visibleMessages.length && 
-                                  _visibleMessages[adjustedIndex]);
-                
+                final isVisible =
+                    !shouldAnimate ||
+                    (shouldAnimate &&
+                        adjustedIndex < _visibleMessages.length &&
+                        _visibleMessages[adjustedIndex]);
+
                 // Build the message widget
                 Widget messageWidget = Container(
                   margin: const EdgeInsets.symmetric(vertical: 6),
@@ -499,28 +532,30 @@ You are DeepSeek, a concise and highly intelligent AI assistant running locally.
                           ),
                         ),
                 );
-                
+
                 // Apply combined slide and fade-in animation
                 if (shouldAnimate) {
                   messageWidget = AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOutQuad,
                     transform: Matrix4.translationValues(
-                      0, 
-                      isVisible ? 0 : (isUser ? 20 : -20), 
-                      0
+                      isVisible ? 0 : (isUser ? 50 : -50),
+                      0,
+                      0,
                     ),
                     child: AnimatedOpacity(
                       opacity: isVisible ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 400),
                       curve: Curves.easeOutQuad,
                       child: messageWidget,
                     ),
                   );
                 }
-                
+
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: messageWidget,
                 );
               },
