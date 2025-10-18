@@ -1,6 +1,21 @@
+<!-- markdownlint-disable MD041 -->
+
+![Chat App banner](assets/screenshots/banner.png)
+
+[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Riverpod](https://img.shields.io/badge/Riverpod-40D394?style=for-the-badge&logo=riverpod&logoColor=white)](https://riverpod.dev)
+[![Sembast](https://img.shields.io/badge/Sembast-5C6BC0?style=for-the-badge)](https://pub.dev/packages/sembast)
+[![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logoColor=white)](https://ollama.com)
+[![Markdown](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white)](https://daringfireball.net/projects/markdown/)
+<!-- markdownlint-enable MD041 -->
+
 # Chat App
 
 A cross‑platform Flutter chat application that talks to a local LLM via Ollama. It renders assistant responses in Markdown, persists conversations using Sembast, and uses Riverpod for state management so drafts appear in the sidebar immediately while you type and while responses stream.
+
+
+
 
 ## Features
 
@@ -95,27 +110,27 @@ Notes
 
 ```text
 lib/
-	app/
-		app.dart                  # MaterialApp, routes
-		screens/
-			chat_screen.dart        # UI, Markdown, animations
-			onboarding_screen.dart
-			splash_screen.dart
-	assets/
-		chat.png                  # App icon asset
-	services/
-		chat_database.dart        # Sembast database wrapper
-	src/
-		data/
-			chat_repository_impl.dart
-		domain/
-			entities/
-				message.dart
-			repositories/
-				chat_repository.dart
-		presentation/
-			chat_controller.dart
-			providers.dart
+  app/
+    app.dart                  # MaterialApp, routes
+    screens/
+      chat_screen.dart        # UI, Markdown, animations
+      onboarding_screen.dart
+      splash_screen.dart
+  assets/
+    chat.png                  # App icon asset
+  services/
+    chat_database.dart        # Sembast database wrapper
+  src/
+    data/
+      chat_repository_impl.dart
+    domain/
+      entities/
+        message.dart
+      repositories/
+        chat_repository.dart
+    presentation/
+      chat_controller.dart
+      providers.dart
 ```
 
 ## Troubleshooting

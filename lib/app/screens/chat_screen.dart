@@ -329,7 +329,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat App')),
+      appBar: AppBar(title: const Text('Chat App'),backgroundColor: const Color.fromARGB(255, 93, 186, 220),),
       drawer: Drawer(
         child: SafeArea(
           child: Column(
